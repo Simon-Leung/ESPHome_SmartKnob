@@ -11,6 +11,7 @@ WT32-S3-WROVER-N16R8 + 2.1 inch RGB LCD(480*480) +16MB NOR FLASH + 8MB PSRAM + M
 ![knob_screen.png](https://s2.loli.net/2024/05/10/dVN1E2aLirB8tlU.png)
 
 See more on: http://doc.panel-tag.cn/ESP32-S3/ZX2D10GE01R-V4848.html
+example: https://github.com/wireless-tag-com/ZX2D10GE01R-V4848
 
 Schematic:
 ![Schematic](https://s2.loli.net/2024/05/10/NwW6PuQT9mIaZC3.jpg)
