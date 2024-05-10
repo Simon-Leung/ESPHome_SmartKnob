@@ -14,6 +14,6 @@ See more on: http://doc.panel-tag.cn/ESP32-S3/ZX2D10GE01R-V4848.html
 Schematic:
 ![Schematic](https://s2.loli.net/2024/05/10/NwW6PuQT9mIaZC3.jpg)
 
-[product manual](http://doc.panel-tag.cn/_static/espboard/ESP32S3/ZX2D10GE01R-V4848.pdf)
+[product manual download](http://doc.panel-tag.cn/_static/espboard/ESP32S3/ZX2D10GE01R-V4848.pdf)
 
 ## Software
