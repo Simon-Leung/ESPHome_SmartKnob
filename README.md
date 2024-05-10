@@ -5,7 +5,8 @@ Home Assistant integration using ESPHome on an esp32-S3 knob screen board, featu
 This repository contains some experimental setup for using the esp32-S3 knob screen board within Home Assistant.
 
 ## Hardware
-### ZX2D10GE01R-V4848:	WT32-S3-WROVER-N16R8 + 2.1 inch RGB LCD(480*480) +16MB NOR FLASH + 8MB PSRAM
+### ZX2D10GE01R-V4848
+WT32-S3-WROVER-N16R8 + 2.1 inch RGB LCD(480*480) +16MB NOR FLASH + 8MB PSRAM + MT8901 hall sensor(knob)
 
 ![knob_screen.png](https://s2.loli.net/2024/05/10/dVN1E2aLirB8tlU.png)
 
