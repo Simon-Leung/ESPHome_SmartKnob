@@ -1,0 +1,257 @@
+substitutions:
+  devicename: "SmartKnob"
+  ssid: SmartKnob Fallback Hotspot
+  static_ip: 192.168.2.108
+  gateway: 192.168.2.1
+  subnet: 255.255.255.0
+  
+esphome:
+  name: $devicename
+  build_path: ./build/$devicename
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+  flash_size: 16M
+  variant: esp32s3
+
+wifi:
+  ssid: "ChinaUnicorn"
+  password: "394052768"
+
+logger:
+
+api:
+
+ota:
+
+captive_portal:
+
+color:
+  - id: my_red
+    red: 100%
+    green: 0%
+    blue: 0%
+  - id: my_orange
+    red: 100%
+    green: 50%
+    blue: 0%
+  - id: my_yellow
+    red: 100%
+    green: 100%
+    blue: 0%
+  - id: my_green
+    red: 0%
+    green: 100%
+    blue: 0%
+  - id: my_blue
+    red: 0%
+    green: 0%
+    blue: 100%
+  - id: my_teal
+    red: 0%
+    green: 100%
+    blue: 100%
+  - id: my_gray
+    red: 70%
+    green: 70%
+    blue: 70%
+  - id: my_white
+    red: 100%
+    green: 100%
+    blue: 100%
+  - id: my_black
+    red: 0%
+    green: 0%
+    blue: 0%
+
+font:
+  - file: "simsun.ttf"
+    id: simsun_48
+    size: 48
+  - file: "simsun.ttf"
+    id: simsun_36
+    size: 36
+  - file: "simsun.ttf"
+    id: simsun_24
+    size: 24
+  - file: "simsun.ttf"
+    id: simsun_12
+    size: 12
+
+image:
+  - file: "power-off-button.png"
+    id: on_off_button
+  - file: "radio-station.png"
+    id: radio
+    
+psram:
+  mode: octal
+  speed: 80MHz
+  
+binary_sensor:
+  - platform: status
+    name: "Node Status"
+    id: system_status
+    
+  - platform: gpio
+    pin: GPIO3
+    id: "btn"
+    name: "btn"
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      then:
+        - script.execute: backlight_script
+    on_release:
+      then:
+        - script.execute: backlight_script
+    on_click:
+      min_length: 50ms
+      max_length: 350ms
+      then:
+        - display.page.show_next: lcd
+    on_double_click:
+      min_length: 50ms
+      max_length: 350ms
+      then:
+        - display.page.show_previous: lcd
+    on_multi_click:
+      - timing:
+        - ON for at most 1s
+      then:
+        - display.page.show: page_main
+
+time:
+  - platform: homeassistant
+    id: esptime
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      # name: ESP IP Address
+      id: ip_address
+      
+  - platform: homeassistant
+    id: weather
+    name: "Weather Forecast From Home Assistant"
+    entity_id: weather.forecast_home
+    
+  - platform: homeassistant
+    id: humidity
+    name: "Humidity From Home Assistant"
+    entity_id: sensor.ambient_humidity
+    
+  - platform: homeassistant
+    id: temperature
+    name: "Temperature From Home Assistant"
+    entity_id: sensor.ambient_temperature
+
+sensor:    
+  - platform: rotary_encoder
+    id: "knob_encoder"
+    name: "Rotary Encoder"
+    pin_a: GPIO5
+    pin_b: GPIO6   
+    on_anticlockwise:
+      - script.execute: backlight_script
+    on_clockwise:
+      - script.execute: backlight_script
+    on_value:#id(sensor_id).raw_state
+      - script.execute: backlight_script
+
+display:
+  - platform: st7701s
+    id: lcd
+    color_order: RGB
+    dimensions:
+      width: 480
+      height: 480
+    cs_pin: 21
+    de_pin: 39
+    hsync_pin: 40
+    vsync_pin: 48
+    pclk_pin: 45
+    data_pins:
+      red:
+        - 10        #r1
+        - 16        #r2
+        - 9         #r3
+        - 15        #r4
+        - 46        #r5
+      green:
+        - 8         #g0
+        - 13        #g1
+        - 18        #g2
+        - 12        #g3
+        - 11        #g4
+        - 17        #g5
+      blue:
+        - 47        #b1
+        - 41        #b2
+        - 0         #b3
+        - 42        #b4
+        - 14        #b5
+    pages:
+      - id: page_main
+        lambda: |-
+          it.print(0, 10, id(my_font), "This is page main!");
+      - id: page_light
+        lambda: |-
+          it.print(0, 10, id(my_font), "This is page light!");
+      - id: page_light_contrl
+        lambda: |-
+          it.print(0, 10, id(my_font), "This is page contrl!");
+      - id: page_light_brightness
+        lambda: |-
+          it.print(0, 10, id(my_font), "This is page brightness!");
+      - id: page_light_temperature
+        lambda: |-
+          it.print(0, 10, id(my_font), "This is page Color Temperature!");
+      - id: page_light_color
+        lambda: |-
+          it.print(0, 10, id(my_font), "This is page RGB Color!");
+    lambda: |-
+      id(lcd).show_page(page_main);
+      
+
+# Define pins for backlight display and back LED1
+output:
+  - platform: ledc
+    pin: GPIO38
+    id: former_led_pin
+
+# Define a monochromatic, dimmable light for the backlight
+light:
+  - platform: monochromatic
+    output: former_led_pin
+    name: "Display Backlight"
+    id: back_light
+    restore_mode: ALWAYS_ON
+    
+script:
+  - id: backlight_script
+    mode: restart     # Light will be kept on during 1 minute since
+                      # the latest time the script is executed
+    then:
+      - light.turn_on: back_light
+      - delay: 1 min
+      - light.turn_on: 
+        id: back_light
+        brightness: 50%
+      - delay: 0.5 min
+      - light.turn_off: back_light
+  
+  - id: set_light_rgb:
+    mode: restart
+    alias: 'ESPHome RGB light set'
+    sequence:
+    - service: light.turn_on
+      data_template:
+        entity_id: '{{ light_name }}'
+        rgb_color:
+        - '{{ red }}'
+        - '{{ green }}'
+        - '{{ blue }}'
