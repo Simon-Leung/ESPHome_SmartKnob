@@ -20,3 +20,6 @@ Schematic:
 [product manual download](http://doc.panel-tag.cn/_static/espboard/ESP32S3/ZX2D10GE01R-V4848.pdf)
 
 ## Software
+Initially inspired by @[lukasz-tuz](https://github.com/lukasz-tuz)'s [esphome-gui](https://github.com/lukasz-tuz/esphome-gui).
+
+With spi interface and RGB interface Pin Reuse, after display is initialized, we need to free the spi bus.
