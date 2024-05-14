@@ -8,6 +8,9 @@ namespace st7701s {
 void ST7701S::setup() {
   esph_log_config(TAG, "Setting up ST7701S");
   this->spi_setup();
+  this->write_init_sequence_();
+  this->spi_teardown();
+  this->spibus_free();
   esp_lcd_rgb_panel_config_t config{};
   config.flags.fb_in_psram = 1;
   config.timings.h_res = this->width_;
@@ -39,7 +42,6 @@ void ST7701S::setup() {
   }
   ESP_ERROR_CHECK(esp_lcd_panel_reset(this->handle_));
   ESP_ERROR_CHECK(esp_lcd_panel_init(this->handle_));
-  this->write_init_sequence_();
   esph_log_config(TAG, "ST7701S setup complete");
 }
 

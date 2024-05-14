@@ -32,11 +32,11 @@ class ST7701S : public display::Display,
  public:
   void update() override { this->do_update_(); }
   void setup() override;
-  void draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
-                      display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) override;
+  // void draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
+  //                     display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) override;
 
-  display::ColorOrder get_color_mode() { return this->color_mode_; }
-  void set_color_mode(display::ColorOrder color_mode) { this->color_mode_ = color_mode; }
+  // display::ColorOrder get_color_mode() { return this->color_mode_; }
+  // void set_color_mode(display::ColorOrder color_mode) { this->color_mode_ = color_mode; }
   void set_invert_colors(bool invert_colors) { this->invert_colors_ = invert_colors; }
 
   void add_data_pin(InternalGPIOPin *data_pin, size_t index) { this->data_pins_[index] = data_pin; };
@@ -99,7 +99,7 @@ class ST7701S : public display::Display,
   bool pclk_inverted_{true};
 
   bool invert_colors_{};
-  display::ColorOrder color_mode_{display::COLOR_ORDER_BGR};
+  // display::ColorOrder color_mode_{display::COLOR_ORDER_BGR};
   size_t width_{};
   size_t height_{};
   int16_t offset_x_{0};
