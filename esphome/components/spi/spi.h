@@ -349,6 +349,7 @@ class SPIComponent : public Component {
 
   void setup() override;
   void dump_config() override;
+  void free_bus(void);
 
  protected:
   GPIOPin *clk_pin_{nullptr};
@@ -417,6 +418,8 @@ class SPIDevice : public SPIClient {
   void spi_setup() override { SPIClient::spi_setup(); }
 
   void spi_teardown() override { SPIClient::spi_teardown(); }
+
+  void spibus_free()     { this->parent_->free_bus(); }
 
   void set_spi_parent(SPIComponent *parent) { this->parent_ = parent; }
 

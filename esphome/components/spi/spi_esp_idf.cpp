@@ -223,6 +223,10 @@ class SPIBusHw : public SPIBus {
       ESP_LOGE(TAG, "Bus init failed - err %X", err);
   }
 
+  ~SPIBusHw(void){
+    spi_bus_free(channel_);
+  }
+
   SPIDelegate *get_delegate(uint32_t data_rate, SPIBitOrder bit_order, SPIMode mode, GPIOPin *cs_pin) override {
     return new SPIDelegateHw(this->channel_, data_rate, bit_order, mode, cs_pin,
                              Utility::get_pin_no(this->sdi_pin_) == -1);
@@ -237,6 +241,10 @@ class SPIBusHw : public SPIBus {
 SPIBus *SPIComponent::get_bus(SPIInterface interface, GPIOPin *clk, GPIOPin *sdo, GPIOPin *sdi,
                               const std::vector<uint8_t> &data_pins) {
   return new SPIBusHw(clk, sdo, sdi, interface, data_pins);
+}
+
+void SPIComponent::free_bus(void) {
+  delete spi_bus_;
 }
 
 #endif
