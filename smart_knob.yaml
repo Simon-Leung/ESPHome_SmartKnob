@@ -1,14 +1,36 @@
 esphome:
   name: smartknob
   friendly_name: SmartKnob
+  platformio_options:
+    board_build.flash_mode: dio # If you don't specify this using esp-idf framework, the device will boot-loop.
+  on_boot:
+    priority: 600
+    then:
+      - logger.log: "Hello World"
+      - script.execute: backlight_script
 
 esp32:
-  board: esp32s3box
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  flash_size: 16MB
   framework:
     type: esp-idf
 
+psram:
+  mode: octal
+  speed: 80000000.0
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/Simon-Leung/ESPHome_SmartKnob
+      ref: master
+    components: [ spi, st7701s, display, gui ]
+
 # Enable logging
 logger:
+  hardware_uart: UART0
+  baud_rate: 115200
 
 # Enable Home Assistant API
 api:
@@ -32,18 +54,19 @@ web_server:
 
 captive_portal:
 
-spi:
-  clk_pin: GPIO47
-  mosi_pin: GPIO41
 
 script:
   - id: backlight_script
     mode: restart
     then:
-      - light.turn_on: back_light
-      - delay: 1 min
-      - light.turn_on: back_light
-      - delay: 0.5 min
+      - light.turn_on: 
+          id: back_light
+          brightness: 100%
+      - delay: 12s
+      - light.turn_on:
+          id: back_light
+          brightness: 50%
+      - delay: 12s
       - light.turn_off: back_light
 
   # - id: set_light_rgb
@@ -57,43 +80,42 @@ script:
   #       - '{{ red }}'
   #       - '{{ green }}'
   #       - '{{ blue }}'
-  
+
 binary_sensor:
   - platform: status
     name: "Node Status"
     id: system_status
     
   - platform: gpio
-    pin: GPIO3
-    id: "btn"
+    pin: 
+      number: GPIO3
+      inverted: True
+    id: btn
     name: "btn"
     filters:
       - delayed_on: 10ms
       - delayed_off: 10ms
     on_press:
       then:
+        - logger.log: "on_press"
         - script.execute: backlight_script
     on_release:
       then:
-        - script.execute: backlight_script
+        - logger.log: "on_release"
     on_click:
-      min_length: 50ms
-      max_length: 350ms
-      then:
-        - logger.log: "Clicked"
-        # - display.page.show_next: lcd
-    on_double_click:
-      min_length: 50ms
-      max_length: 350ms
-      then:
-        - logger.log: "Double-Clicked"
-      #   - display.page.show_previous: lcd
-    on_multi_click:
-    - timing:
-      - ON for at most 1s
+      min_length: 2000ms
+      max_length: 5000ms
       then:
         - logger.log: "LONG-Clicked"
-      #   - display.page.show: page_main
+    on_double_click:
+      then:
+        - logger.log: "Double-Clicked"
+    on_multi_click:
+    - timing:
+      - ON for 50ms to 350ms
+      - OFF for at least 0.5s
+      then:
+        - logger.log: "Clicked"
 
 time:
   - platform: homeassistant
@@ -127,10 +149,13 @@ sensor:
     pin_a: GPIO5
     pin_b: GPIO6   
     on_anticlockwise:
+      - logger.log: "on_anticlockwise"
       - script.execute: backlight_script
     on_clockwise:
+      - logger.log: "on_clockwise"
       - script.execute: backlight_script
     on_value:
+      - logger.log: "rotary on_value"
       - script.execute: backlight_script
 
 # Define pins for backlight display and back LED1
@@ -145,18 +170,19 @@ light:
     output: former_led_pin
     name: "Display Backlight"
     id: back_light
-    restore_mode: ALWAYS_ON
 
-external_components:
-  - source:
-      type: git
-      url: https://github.com/lukasz-tuz/esphome-gui
-      ref: main
-    components: [ display, gui ]
+spi:
+  clk_pin:
+    number: GPIO47
+    allow_other_uses: True
+  mosi_pin: 
+    number: GPIO41
+    allow_other_uses: True
 
 display:
   - platform: st7701s
     id: disp
+    auto_clear_enabled: False
     color_order: RGB
     dimensions:
       width: 480
@@ -182,8 +208,10 @@ display:
         - 11        #g4
         - 17        #g5
       blue:
-        - 47        #b1
-        - 41        #b2
+        - number: 47        #b1
+          allow_other_uses: True
+        - number: 41        #b2
+          allow_other_uses: True
         - 0         #b3
         - 42        #b4
         - 14        #b5
