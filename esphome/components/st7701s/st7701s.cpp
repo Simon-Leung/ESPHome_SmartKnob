@@ -9,6 +9,7 @@ void ST7701S::setup() {
   esph_log_config(TAG, "Setting up ST7701S");
   this->spi_setup();
   this->write_init_sequence_();
+  esph_log_config(TAG, "Free spi bus");
   this->spi_teardown();
   this->spibus_free();
   esp_lcd_rgb_panel_config_t config{};
@@ -27,7 +28,9 @@ void ST7701S::setup() {
   config.sram_trans_align = 64;
   config.psram_trans_align = 64;
   size_t data_pin_count = sizeof(this->data_pins_) / sizeof(this->data_pins_[0]);
+  esph_log_config(TAG, "Setup data pin");
   for (size_t i = 0; i != data_pin_count; i++) {
+    this->data_pins_[i]->setup();
     config.data_gpio_nums[i] = this->data_pins_[i]->get_pin();
   }
   config.data_width = data_pin_count;
@@ -42,6 +45,10 @@ void ST7701S::setup() {
   }
   ESP_ERROR_CHECK(esp_lcd_panel_reset(this->handle_));
   ESP_ERROR_CHECK(esp_lcd_panel_init(this->handle_));
+  if (!this->buffer_length_){
+    this->init_internal_(this->get_buffer_length_());
+    memset(this->buffer_, 0x00, this->get_buffer_length_());
+  }
   esph_log_config(TAG, "ST7701S setup complete");
 }
 
@@ -157,10 +164,13 @@ void ST7701S::write_init_sequence_() {
   this->write_data_(val);
   esph_log_d(TAG, "write MADCTL %X", val);
   this->write_command_(this->invert_colors_ ? INVERT_ON : INVERT_OFF);
-  this->set_timeout(120, [this] {
-    this->write_command_(SLEEP_OUT);
-    this->write_command_(DISPLAY_ON);
-  });
+  delay(120);
+  this->write_command_(SLEEP_OUT);
+  this->write_command_(DISPLAY_ON);
+}
+
+size_t ST7701S::get_buffer_length_() {
+  return size_t(this->get_width_internal()) * size_t(this->get_height_internal()) * 2;
 }
 
 void ST7701S::dump_config() {
@@ -175,6 +185,16 @@ void ST7701S::dump_config() {
   for (size_t i = 0; i != data_pin_count; i++)
     ESP_LOGCONFIG(TAG, "  Data pin %d: %s", i, (this->data_pins_[i])->dump_summary().c_str());
   ESP_LOGCONFIG(TAG, "  SPI Data rate: %dMHz", (unsigned) (this->data_rate_ / 1000000));
+}
+
+void HOT ST7701S::draw_absolute_pixel_internal(int x, int y, Color color) {
+  if (x >= this->get_width_internal() || x < 0 || y >= this->get_height_internal() || y < 0)
+    return;
+ 
+  auto color565 = display::ColorUtil::color_to_565(color);
+  uint32_t pos = (x + y * this->get_width_internal()) * 2;
+  this->buffer_[pos++] = (color565 >> 8) & 0xff;
+  this->buffer_[pos] = color565 & 0xff;
 }
 
 }  // namespace st7701s

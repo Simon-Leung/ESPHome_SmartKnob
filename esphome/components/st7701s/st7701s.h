@@ -8,6 +8,7 @@
 #include "esphome/core/component.h"
 #include "esphome/components/spi/spi.h"
 #include "esphome/components/display/display.h"
+#include "esphome/components/display/display_buffer.h"
 #include "esp_lcd_panel_ops.h"
 
 #include "esp_lcd_panel_rgb.h"
@@ -26,17 +27,17 @@ const uint8_t DISPLAY_ON = 0x29;
 const uint8_t CMD2_BKSEL = 0xFF;
 const uint8_t CMD2_BK0[5] = {0x77, 0x01, 0x00, 0x00, 0x10};
 
-class ST7701S : public display::Display,
+class ST7701S : public display::DisplayBuffer,
                 public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_LOW, spi::CLOCK_PHASE_LEADING,
                                       spi::DATA_RATE_1MHZ> {
  public:
   void update() override { this->do_update_(); }
   void setup() override;
-  // void draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
-  //                     display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) override;
+  void draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
+                      display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) override;
 
-  // display::ColorOrder get_color_mode() { return this->color_mode_; }
-  // void set_color_mode(display::ColorOrder color_mode) { this->color_mode_ = color_mode; }
+  display::ColorOrder get_color_mode() { return this->color_mode_; }
+  void set_color_mode(display::ColorOrder color_mode) { this->color_mode_ = color_mode; }
   void set_invert_colors(bool invert_colors) { this->invert_colors_ = invert_colors; }
 
   void add_data_pin(InternalGPIOPin *data_pin, size_t index) { this->data_pins_[index] = data_pin; };
@@ -46,6 +47,7 @@ class ST7701S : public display::Display,
   void set_hsync_pin(InternalGPIOPin *hsync_pin) { this->hsync_pin_ = hsync_pin; }
   void set_dc_pin(GPIOPin *dc_pin) { this->dc_pin_ = dc_pin; }
   void set_reset_pin(GPIOPin *reset_pin) { this->reset_pin_ = reset_pin; }
+  void set_height(uint32_t height) { this->height_ = height; }
   void set_width(uint16_t width) { this->width_ = width; }
   void set_pclk_frequency(uint32_t pclk_frequency) { this->pclk_frequency_ = pclk_frequency; }
   void set_pclk_inverted(bool inverted) { this->pclk_inverted_ = inverted; }
@@ -80,6 +82,8 @@ class ST7701S : public display::Display,
   void write_data_(uint8_t value);
   void write_sequence_(uint8_t cmd, size_t len, const uint8_t *bytes);
   void write_init_sequence_();
+  void draw_absolute_pixel_internal(int x, int y, Color color) override;
+  size_t get_buffer_length_();
 
   InternalGPIOPin *de_pin_{nullptr};
   InternalGPIOPin *pclk_pin_{nullptr};
@@ -99,7 +103,7 @@ class ST7701S : public display::Display,
   bool pclk_inverted_{true};
 
   bool invert_colors_{};
-  // display::ColorOrder color_mode_{display::COLOR_ORDER_BGR};
+  display::ColorOrder color_mode_{display::COLOR_ORDER_BGR};
   size_t width_{};
   size_t height_{};
   int16_t offset_x_{0};

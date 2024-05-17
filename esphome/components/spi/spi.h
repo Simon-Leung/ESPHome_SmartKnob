@@ -311,11 +311,14 @@ class SPIBus {
 
   SPIBus(GPIOPin *clk, GPIOPin *sdo, GPIOPin *sdi) : clk_pin_(clk), sdo_pin_(sdo), sdi_pin_(sdi) {}
 
+  ~SPIBus() = default;
+
   virtual SPIDelegate *get_delegate(uint32_t data_rate, SPIBitOrder bit_order, SPIMode mode, GPIOPin *cs_pin) {
     return new SPIDelegateBitBash(data_rate, bit_order, mode, cs_pin, this->clk_pin_, this->sdo_pin_, this->sdi_pin_);
   }
 
   virtual bool is_hw() { return false; }
+  virtual void free_bus(void) {}
 
  protected:
   GPIOPin *clk_pin_{};
@@ -349,7 +352,7 @@ class SPIComponent : public Component {
 
   void setup() override;
   void dump_config() override;
-  void free_bus(void);
+  void free_bus(void) {spi_bus_->free_bus();}
 
  protected:
   GPIOPin *clk_pin_{nullptr};

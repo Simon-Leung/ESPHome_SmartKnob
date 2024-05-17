@@ -1,10 +1,12 @@
+# coding=utf8
 import re
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
 import esphome.core as core
 from esphome.schema_extractors import schema_extractor, SCHEMA_EXTRACT
-from esphome.components import display, switch, sensor, image, color
+from esphome.components import display, switch, sensor, color
+from esphome.components.font import Font
 
 from esphome.const import (
     CONF_ID,
@@ -53,6 +55,7 @@ CONF_BYTE_ORDER = "byte_order"
 CONF_CHANGE_RATE = "change_rate"
 CONF_CLEAR_FLAGS = "clear_flags"
 CONF_COLOR_DEPTH = "color_depth"
+CONF_DEFAULT_FONT = "default_font"
 CONF_COLOR_END = "color_end"
 CONF_COLOR_START = "color_start"
 CONF_CRITICAL_VALUE = "critical_value"
@@ -680,6 +683,7 @@ CONFIG_SCHEMA = cv.COMPONENT_SCHEMA.extend(OBJ_SCHEMA).extend(
         cv.GenerateID(): cv.declare_id(GuiComponent),
         cv.GenerateID(CONF_DISPLAY_ID): cv.use_id(display.DisplayBuffer),
         cv.Optional(CONF_COLOR_DEPTH, default=8): cv.one_of(1, 8, 16, 32),
+        cv.Optional(CONF_DEFAULT_FONT, default="montserrat_36"): lv_font,
         cv.Optional(CONF_BYTE_ORDER, default="big_endian"): cv.one_of(
             "big_endian", "little_endian"
         ),
@@ -744,7 +748,7 @@ async def widget_to_code(widget):
 
 async def to_code(config):
     cg.add_library("lvgl/lvgl", "^8.3.9")
-    core.CORE.add_build_flag("-DLV_CONF_SKIP=1")
+    core.CORE.add_build_flag("-DCONFIG_LV_CONF_SKIP=1")
     core.CORE.add_build_flag("-DLV_USE_USER_DATA=1")
     core.CORE.add_build_flag("-DLV_USE_LOG=1")
     # FIXME: Sync with ESPHome's log level
@@ -780,7 +784,8 @@ async def to_code(config):
     core.CORE.add_build_flag("-DLV_FONT_MONTSERRAT_48=1")
     core.CORE.add_build_flag("-DLV_USE_FONT_SUBPX=1")
     core.CORE.add_build_flag("-DLV_FONT_SUBPX_BGR=0")
-    core.CORE.add_build_flag("-DLV_FONT_DEFAULT=\\'\\&lv_font_montserrat_36\\'")
+    # default_font = config[CONF_DEFAULT_FONT]
+    # core.CORE.add_build_flag(f"-DLV_FONT_DEFAULT=\\'{default_font}\\'")
 
     # Disable GPU accelerators for other architectures
     core.CORE.add_build_flag("-DLV_USE_GPU_ARM2D=0")

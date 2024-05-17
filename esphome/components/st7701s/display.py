@@ -57,7 +57,7 @@ CONF_VSYNC_FRONT_PORCH = "vsync_front_porch"
 DEPENDENCIES = ["spi", "esp32"]
 
 st7701s_ns = cg.esphome_ns.namespace("st7701s")
-ST7701S = st7701s_ns.class_("ST7701S", display.Display, cg.Component, spi.SPIDevice)
+ST7701S = st7701s_ns.class_("ST7701S", display.DisplayBuffer, cg.Component, spi.SPIDevice)
 ColorOrder = display.display_ns.enum("ColorMode")
 
 COLOR_ORDERS = {

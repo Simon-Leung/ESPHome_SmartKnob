@@ -224,7 +224,7 @@ class SPIBusHw : public SPIBus {
   }
 
   ~SPIBusHw(void){
-    spi_bus_free(channel_);
+    free_bus();
   }
 
   SPIDelegate *get_delegate(uint32_t data_rate, SPIBitOrder bit_order, SPIMode mode, GPIOPin *cs_pin) override {
@@ -232,6 +232,10 @@ class SPIBusHw : public SPIBus {
                              Utility::get_pin_no(this->sdi_pin_) == -1);
   }
 
+  void free_bus(void) override {
+    spi_bus_free(channel_);
+  }
+ 
  protected:
   SPIInterface channel_{};
 
@@ -241,10 +245,6 @@ class SPIBusHw : public SPIBus {
 SPIBus *SPIComponent::get_bus(SPIInterface interface, GPIOPin *clk, GPIOPin *sdo, GPIOPin *sdi,
                               const std::vector<uint8_t> &data_pins) {
   return new SPIBusHw(clk, sdo, sdi, interface, data_pins);
-}
-
-void SPIComponent::free_bus(void) {
-  delete spi_bus_;
 }
 
 #endif
