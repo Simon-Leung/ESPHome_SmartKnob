@@ -351,6 +351,7 @@ class SPIComponent : public Component {
   float get_setup_priority() const override { return setup_priority::BUS; }
 
   void setup() override;
+  void setup_();
   void dump_config() override;
   void free_bus(void) {spi_bus_->free_bus();}
 

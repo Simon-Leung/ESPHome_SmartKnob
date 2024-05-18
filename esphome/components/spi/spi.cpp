@@ -21,6 +21,9 @@ SPIDelegate *SPIComponent::register_device(SPIClient *device, SPIMode mode, SPIB
     ESP_LOGE(TAG, "SPI device already registered");
     return this->devices_[device];
   }
+  if (this->spi_bus_ == nullptr) {
+    setup_();
+  }
   SPIDelegate *delegate = this->spi_bus_->get_delegate(data_rate, bit_order, mode, cs_pin);  // NOLINT
   this->devices_[device] = delegate;
   return delegate;
@@ -36,6 +39,10 @@ void SPIComponent::unregister_device(SPIClient *device) {
 }
 
 void SPIComponent::setup() {
+  ESP_LOGD(TAG, "We will be setting up SPI bus in register_device...");
+}
+
+void SPIComponent::setup_() {
   ESP_LOGD(TAG, "Setting up SPI bus...");
 
   if (this->sdo_pin_ == nullptr)
