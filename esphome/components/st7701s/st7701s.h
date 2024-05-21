@@ -94,13 +94,13 @@ class ST7701S : public display::DisplayBuffer,
   InternalGPIOPin *data_pins_[16] = {};
   uint16_t hsync_pulse_width_ = 10;
   uint16_t hsync_back_porch_ = 10;
-  uint16_t hsync_front_porch_ = 20;
-  uint16_t vsync_pulse_width_ = 10;
-  uint16_t vsync_back_porch_ = 10;
-  uint16_t vsync_front_porch_ = 10;
+  uint16_t hsync_front_porch_ = 10;
+  uint16_t vsync_pulse_width_ = 2;
+  uint16_t vsync_back_porch_ = 12;
+  uint16_t vsync_front_porch_ = 14;
   std::vector<uint8_t> init_sequence_;
-  uint32_t pclk_frequency_ = 16 * 1000 * 1000;
-  bool pclk_inverted_{true};
+  uint32_t pclk_frequency_ = 15 * 1000 * 1000;
+  bool pclk_inverted_{false};
 
   bool invert_colors_{};
   display::ColorOrder color_mode_{display::COLOR_ORDER_BGR};

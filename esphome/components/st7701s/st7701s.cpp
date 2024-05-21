@@ -14,6 +14,9 @@ void ST7701S::setup() {
   this->spibus_free();
   esp_lcd_rgb_panel_config_t config{};
   config.flags.fb_in_psram = 1;
+  config.flags.double_fb = 1;
+  config.flags.refresh_on_demand = 0;
+  config.bounce_buffer_size_px = 480 * 16;
   config.timings.h_res = this->width_;
   config.timings.v_res = this->height_;
   config.timings.hsync_pulse_width = this->hsync_pulse_width_;
@@ -24,13 +27,12 @@ void ST7701S::setup() {
   config.timings.vsync_front_porch = this->vsync_front_porch_;
   config.timings.flags.pclk_active_neg = this->pclk_inverted_;
   config.timings.pclk_hz = this->pclk_frequency_;
-  config.clk_src = LCD_CLK_SRC_PLL160M;
+  config.clk_src = LCD_CLK_SRC_PLL240M;
   config.sram_trans_align = 64;
   config.psram_trans_align = 64;
   size_t data_pin_count = sizeof(this->data_pins_) / sizeof(this->data_pins_[0]);
   esph_log_config(TAG, "Setup data pin");
   for (size_t i = 0; i != data_pin_count; i++) {
-    this->data_pins_[i]->setup();
     config.data_gpio_nums[i] = this->data_pins_[i]->get_pin();
   }
   config.data_width = data_pin_count;
@@ -164,8 +166,8 @@ void ST7701S::write_init_sequence_() {
   this->write_data_(val);
   esph_log_d(TAG, "write MADCTL %X", val);
   this->write_command_(this->invert_colors_ ? INVERT_ON : INVERT_OFF);
-  delay(120);
   this->write_command_(SLEEP_OUT);
+  delay(120);
   this->write_command_(DISPLAY_ON);
 }
 

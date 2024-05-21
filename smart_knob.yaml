@@ -15,10 +15,22 @@ esp32:
   flash_size: 16MB
   framework:
     type: esp-idf
+    version: 5.1.2
+    platform_version: 6.5.0
+    # version: 5.0.0
+    # platform_version: 6.0.0
+    sdkconfig_options:
+      CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_16B: "n"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_32B: "n"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_SIZE: "64"
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
+      CONFIG_SPIRAM_RODATA: "y"
 
 psram:
   mode: octal
-  speed: 80000000.0
+  speed: 120000000.0
 
 external_components:
   - source:
@@ -192,6 +204,8 @@ display:
     hsync_pin: 40
     vsync_pin: 48
     pclk_pin: 45
+    init_sequence:
+      - 2 # select canned init sequence number 2
     
     data_pins:
       red:
