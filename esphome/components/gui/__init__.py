@@ -246,9 +246,8 @@ def lv_font(value):
     if isinstance(value, str) and value.lower() in LV_FONTS:
         font = cv.one_of(*LV_FONTS, lower=True)(value)
         lv_fonts_used.add(font)
-        return "&lv_font_" + font
-    font = cv.use_id(Font)(value)
-    return f"(new lvgl::FontEngine({font}))->get_lv_font()"
+        return value.upper()
+    return "MONTSERRAT_36"
 
 
 def lv_bool(value):
@@ -784,8 +783,9 @@ async def to_code(config):
     core.CORE.add_build_flag("-DLV_FONT_MONTSERRAT_48=1")
     core.CORE.add_build_flag("-DLV_USE_FONT_SUBPX=1")
     core.CORE.add_build_flag("-DLV_FONT_SUBPX_BGR=0")
-    # default_font = config[CONF_DEFAULT_FONT]
-    # core.CORE.add_build_flag(f"-DLV_FONT_DEFAULT=\\'{default_font}\\'")
+    
+    default_font = config[CONF_DEFAULT_FONT]
+    core.CORE.add_build_flag(f"-DCONFIG_LV_FONT_DEFAULT_{default_font}=1")
 
     # Disable GPU accelerators for other architectures
     core.CORE.add_build_flag("-DLV_USE_GPU_ARM2D=0")

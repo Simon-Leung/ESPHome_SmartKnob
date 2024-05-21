@@ -11,7 +11,7 @@ void GuiComponent::setup() {
   lv_log_register_print_cb(lv_esp_log);
 #endif
   uint32_t len = this->display_->get_buffer_length();
-  ESP_LOGI(TAG, "[init_lv_drv] Memory buffer length %u", len);
+  ESP_LOGI(TAG, "[init_lv_drv] Memory buffer length %lu", len);
 
   lv_init();
 
@@ -63,7 +63,7 @@ void HOT GuiComponent::refresh_internal_(lv_disp_drv_t *disp_drv,
                                          const lv_area_t *area,
                                          lv_color_t *buf) {
   GuiComponent *gui = (GuiComponent *)(disp_drv->user_data);
-  gui->display_->update();
+  gui->display_->refresh();
   lv_disp_flush_ready(disp_drv);
 }
 

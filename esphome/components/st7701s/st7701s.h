@@ -30,12 +30,13 @@ const uint8_t CMD2_BK0[5] = {0x77, 0x01, 0x00, 0x00, 0x10};
 class ST7701S : public display::DisplayBuffer,
                 public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_LOW, spi::CLOCK_PHASE_LEADING,
                                       spi::DATA_RATE_1MHZ> {
- public:
+ public: 
   void update() override { this->do_update_(); }
   void setup() override;
+#ifndef USE_GUI
   void draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
                       display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) override;
-
+#endif
   display::ColorOrder get_color_mode() { return this->color_mode_; }
   void set_color_mode(display::ColorOrder color_mode) { this->color_mode_ = color_mode; }
   void set_invert_colors(bool invert_colors) { this->invert_colors_ = invert_colors; }
@@ -74,7 +75,12 @@ class ST7701S : public display::DisplayBuffer,
   int get_width_internal() override { return this->width_; }
   int get_height_internal() override { return this->height_; }
   void dump_config() override;
+#ifndef USE_GUI
   void draw_pixel_at(int x, int y, Color color) override;
+#else
+  void refresh() override;
+  void write_display_data();
+#endif
 
   // this will be horribly slow.
  protected:

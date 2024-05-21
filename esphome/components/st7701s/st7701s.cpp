@@ -16,7 +16,7 @@ void ST7701S::setup() {
   config.flags.fb_in_psram = 1;
   config.flags.double_fb = 1;
   config.flags.refresh_on_demand = 0;
-  config.bounce_buffer_size_px = 480 * 16;
+  config.bounce_buffer_size_px = this->width_ * 16; // allocate 16 lines data as bounce buffer from internal memory
   config.timings.h_res = this->width_;
   config.timings.v_res = this->height_;
   config.timings.hsync_pulse_width = this->hsync_pulse_width_;
@@ -54,6 +54,7 @@ void ST7701S::setup() {
   esph_log_config(TAG, "ST7701S setup complete");
 }
 
+#ifndef USE_GUI
 void ST7701S::draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
                              display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) {
   if (w <= 0 || h <= 0)
@@ -111,6 +112,22 @@ void ST7701S::draw_pixel_at(int x, int y, Color color) {
                        0, 0, 0);
   App.feed_wdt();
 }
+#else
+void ST7701S::write_display_data() {
+  uint16_t x1 = this->offset_x_;
+  uint16_t x2 = x1 + get_width_internal();
+  uint16_t y1 = this->offset_y_;
+  uint16_t y2 = y1 + get_height_internal();
+  esp_lcd_panel_draw_bitmap(this->handle_, x1, y1, x2, y2, this->buffer_);
+  App.feed_wdt();
+}
+#endif
+
+#ifdef USE_GUI
+void ST7701S::refresh() {
+  this->write_display_data();
+}
+#endif
 
 void ST7701S::write_command_(uint8_t value) {
   this->enable();
