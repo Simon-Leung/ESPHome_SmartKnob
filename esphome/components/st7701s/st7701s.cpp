@@ -47,14 +47,9 @@ void ST7701S::setup() {
   }
   ESP_ERROR_CHECK(esp_lcd_panel_reset(this->handle_));
   ESP_ERROR_CHECK(esp_lcd_panel_init(this->handle_));
-  if (!this->buffer_length_){
-    this->init_internal_(this->get_buffer_length_());
-    memset(this->buffer_, 0x00, this->get_buffer_length_());
-  }
   esph_log_config(TAG, "ST7701S setup complete");
 }
 
-#ifndef USE_GUI
 void ST7701S::draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
                              display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) {
   if (w <= 0 || h <= 0)
@@ -112,22 +107,6 @@ void ST7701S::draw_pixel_at(int x, int y, Color color) {
                        0, 0, 0);
   App.feed_wdt();
 }
-#else
-void ST7701S::write_display_data() {
-  uint16_t x1 = this->offset_x_;
-  uint16_t x2 = x1 + get_width_internal();
-  uint16_t y1 = this->offset_y_;
-  uint16_t y2 = y1 + get_height_internal();
-  esp_lcd_panel_draw_bitmap(this->handle_, x1, y1, x2, y2, this->buffer_);
-  App.feed_wdt();
-}
-#endif
-
-#ifdef USE_GUI
-void ST7701S::refresh() {
-  this->write_display_data();
-}
-#endif
 
 void ST7701S::write_command_(uint8_t value) {
   this->enable();
@@ -188,10 +167,6 @@ void ST7701S::write_init_sequence_() {
   this->write_command_(DISPLAY_ON);
 }
 
-size_t ST7701S::get_buffer_length_() {
-  return size_t(this->get_width_internal()) * size_t(this->get_height_internal()) * 2;
-}
-
 void ST7701S::dump_config() {
   ESP_LOGCONFIG("", "ST7701S RGB LCD");
   ESP_LOGCONFIG(TAG, "  Height: %u", this->height_);
@@ -205,17 +180,6 @@ void ST7701S::dump_config() {
     ESP_LOGCONFIG(TAG, "  Data pin %d: %s", i, (this->data_pins_[i])->dump_summary().c_str());
   ESP_LOGCONFIG(TAG, "  SPI Data rate: %dMHz", (unsigned) (this->data_rate_ / 1000000));
 }
-
-void HOT ST7701S::draw_absolute_pixel_internal(int x, int y, Color color) {
-  if (x >= this->get_width_internal() || x < 0 || y >= this->get_height_internal() || y < 0)
-    return;
- 
-  auto color565 = display::ColorUtil::color_to_565(color);
-  uint32_t pos = (x + y * this->get_width_internal()) * 2;
-  this->buffer_[pos++] = (color565 >> 8) & 0xff;
-  this->buffer_[pos] = color565 & 0xff;
-}
-
 }  // namespace st7701s
 }  // namespace esphome
 #endif  // USE_ESP32_VARIANT_ESP32S3

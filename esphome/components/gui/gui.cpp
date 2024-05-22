@@ -10,13 +10,30 @@ void GuiComponent::setup() {
 #if LV_USE_LOG
   lv_log_register_print_cb(lv_esp_log);
 #endif
-  uint32_t len = this->display_->get_buffer_length();
-  ESP_LOGI(TAG, "[init_lv_drv] Memory buffer length %lu", len);
-
   lv_init();
 
-  lv_disp_draw_buf_init(&this->draw_buf_, this->display_->get_buffer(), NULL,
-                        len);
+  size_t buffer_pixels = this->display_->get_width() * this->display_->get_height();
+  auto buffer_length = buffer_pixels * LV_COLOR_DEPTH / 8;
+  if (buffer_length) {    
+    ExternalRAMAllocator<uint8_t> allocator(ExternalRAMAllocator<uint8_t>::ALLOW_FAILURE);
+    uint8_t *buffer = allocator.allocate(buffer_length);
+    if (buffer == nullptr) {
+      ESP_LOGE(TAG, "Could not allocate buffer for Gui!");
+      this->mark_failed();
+      this->status_set_error("Memory allocation failure");
+      return;
+    }
+    memset(buffer, 0x00, buffer_length);
+    ESP_LOGI(TAG, "[init_lv_drv] Memory buffer length %u", buffer_length);
+    lv_disp_draw_buf_init(&this->draw_buf_, buffer, NULL,
+                          buffer_length);
+  } else {
+    ESP_LOGE(TAG, "Display is not setup!");
+    this->mark_failed();
+    this->status_set_error("Display is not setup");
+    return;
+  }
+
   lv_disp_drv_init(&this->disp_drv_);
   this->disp_drv_.hor_res = this->display_->get_width();
   this->disp_drv_.ver_res = this->display_->get_height();
@@ -63,7 +80,10 @@ void HOT GuiComponent::refresh_internal_(lv_disp_drv_t *disp_drv,
                                          const lv_area_t *area,
                                          lv_color_t *buf) {
   GuiComponent *gui = (GuiComponent *)(disp_drv->user_data);
-  gui->display_->refresh();
+  // gui->display_->refresh();
+  gui->display_->draw_pixels_at(area->x1, area->y1, lv_area_get_width(area), lv_area_get_height(area),
+                              (const uint8_t *)buf,
+                              display::COLOR_ORDER_RGB, LV_BITNESS, LV_COLOR_16_SWAP);
   lv_disp_flush_ready(disp_drv);
 }
 

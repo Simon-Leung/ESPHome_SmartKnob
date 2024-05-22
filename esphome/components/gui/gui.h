@@ -12,6 +12,13 @@ class DisplayBuffer;
 }  // namespace display
 
 namespace gui {
+#if LV_COLOR_DEPTH == 8
+static const display::ColorBitness LV_BITNESS = display::ColorBitness::COLOR_BITNESS_332;
+#elif LV_COLOR_DEPTH == 32
+static const display::ColorBitness LV_BITNESS = display::ColorBitness::COLOR_BITNESS_888;
+#else
+static const display::ColorBitness LV_BITNESS = display::ColorBitness::COLOR_BITNESS_565;
+#endif
 using namespace display;
 
 class GuiComponent : public Component {
@@ -26,7 +33,7 @@ class GuiComponent : public Component {
   static void lv_esp_log(const char *buf);
 #endif
 
-  void set_display(DisplayBuffer *display) { this->display_ = display; }
+  void set_display(Display *display) { this->display_ = display; }
   static void refresh(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                           lv_color_t *buf);
 
@@ -34,7 +41,7 @@ class GuiComponent : public Component {
   void refresh_internal_(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                     lv_color_t *buf);
 
-  DisplayBuffer *display_{nullptr};
+  Display *display_{nullptr};
 
   lv_disp_t *lv_disp_{nullptr};
   lv_disp_drv_t disp_drv_{};

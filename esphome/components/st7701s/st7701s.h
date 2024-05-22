@@ -8,7 +8,6 @@
 #include "esphome/core/component.h"
 #include "esphome/components/spi/spi.h"
 #include "esphome/components/display/display.h"
-#include "esphome/components/display/display_buffer.h"
 #include "esp_lcd_panel_ops.h"
 
 #include "esp_lcd_panel_rgb.h"
@@ -27,16 +26,14 @@ const uint8_t DISPLAY_ON = 0x29;
 const uint8_t CMD2_BKSEL = 0xFF;
 const uint8_t CMD2_BK0[5] = {0x77, 0x01, 0x00, 0x00, 0x10};
 
-class ST7701S : public display::DisplayBuffer,
+class ST7701S : public display::Display,
                 public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST, spi::CLOCK_POLARITY_LOW, spi::CLOCK_PHASE_LEADING,
                                       spi::DATA_RATE_1MHZ> {
  public: 
   void update() override { this->do_update_(); }
   void setup() override;
-#ifndef USE_GUI
   void draw_pixels_at(int x_start, int y_start, int w, int h, const uint8_t *ptr, display::ColorOrder order,
                       display::ColorBitness bitness, bool big_endian, int x_offset, int y_offset, int x_pad) override;
-#endif
   display::ColorOrder get_color_mode() { return this->color_mode_; }
   void set_color_mode(display::ColorOrder color_mode) { this->color_mode_ = color_mode; }
   void set_invert_colors(bool invert_colors) { this->invert_colors_ = invert_colors; }
@@ -75,12 +72,7 @@ class ST7701S : public display::DisplayBuffer,
   int get_width_internal() override { return this->width_; }
   int get_height_internal() override { return this->height_; }
   void dump_config() override;
-#ifndef USE_GUI
   void draw_pixel_at(int x, int y, Color color) override;
-#else
-  void refresh() override;
-  void write_display_data();
-#endif
 
   // this will be horribly slow.
  protected:
@@ -88,8 +80,6 @@ class ST7701S : public display::DisplayBuffer,
   void write_data_(uint8_t value);
   void write_sequence_(uint8_t cmd, size_t len, const uint8_t *bytes);
   void write_init_sequence_();
-  void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  size_t get_buffer_length_();
 
   InternalGPIOPin *de_pin_{nullptr};
   InternalGPIOPin *pclk_pin_{nullptr};
