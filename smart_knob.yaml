@@ -232,10 +232,9 @@ display:
 gui:
   id: mygui
   display_id: disp
-  rotary_encoders:
-    sensor: encoder
-    binary_sensor: pushbutton
-    group: general
+  rotary_encoder:
+    encoder: knob_encoder
+    binary_sensor: btn
   color_depth: 16
   bg_color: 0x0F0F0F
   text_font: unscii_8

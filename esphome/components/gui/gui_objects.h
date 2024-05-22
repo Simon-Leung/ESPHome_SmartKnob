@@ -3,7 +3,7 @@
 #include "esphome.h"
 #include "lvgl.h"
 
-#ifdef USE_METER
+#ifdef GUI_USE_METER
 // #include "esphome/components/sensor/sensor.h"
 // using namespace sensor;
 #endif
@@ -44,13 +44,13 @@ class GuiLabel : public GuiObject, public Component {
 
   void print(const char* text);
   void print(int x, int y, const char* text);
-#ifdef USE_TIME
+#ifdef GUI_USE_TIME
   void strftime(const char* format, ESPTime time);
   void strftime(int x, int y, const char* format, ESPTime time);
 #endif
 };
 
-#ifdef USE_CHECKBOX
+#ifdef GUI_USE_CHECKBOX
 class GuiCheckbox : public GuiObject, public Component {
  protected:
   switch_::Switch* switch_;
@@ -74,67 +74,67 @@ class GuiCheckbox : public GuiObject, public Component {
 };
 #endif
 
-#ifdef USE_ARC
+#ifdef GUI_USE_ARC
 #endif
 
-#ifdef USE_BAR
+#ifdef GUI_USE_BAR
 #endif
 
-#ifdef USE_BUTTON
+#ifdef GUI_USE_BUTTON
 #endif
 
-#ifdef USE_BUTTON_MATRIX
+#ifdef GUI_USE_BUTTON_MATRIX
 #endif
 
-#ifdef USE_DROPDOWN
+#ifdef GUI_USE_DROPDOWN
 #endif
 
-#ifdef USE_IMAGE
+#ifdef GUI_USE_IMAGE
 #endif
 
-#ifdef USE_ROLLER
+#ifdef GUI_USE_ROLLER
 #endif
 
-#ifdef USE_SLIDER
+#ifdef GUI_USE_SLIDER
 #endif
 
-#ifdef USE_SWITCH
+#ifdef GUI_USE_SWITCH
 #endif
 
-#ifdef USE_TABLE
+#ifdef GUI_USE_TABLE
 #endif
 
-#ifdef USE_TEXTAREA
+#ifdef GUI_USE_TEXTAREA
 #endif
 
-#ifdef USE_ANIMIMG
+#ifdef GUI_USE_ANIMIMG
 #endif
 
-#ifdef USE_CALENDAR
+#ifdef GUI_USE_CALENDAR
 #endif
 
-#ifdef USE_CHART
+#ifdef GUI_USE_CHART
 #endif
 
-#ifdef USE_COLORWHEEL
+#ifdef GUI_USE_COLORWHEEL
 #endif
 
-#ifdef USE_IMGBTN
+#ifdef GUI_USE_IMGBTN
 #endif
 
-#ifdef USE_KEYBOARD
+#ifdef GUI_USE_KEYBOARD
 #endif
 
-#ifdef USE_LED
+#ifdef GUI_USE_LED
 #endif
 
-#ifdef USE_LIST
+#ifdef GUI_USE_LIST
 #endif
 
-#ifdef USE_MENU
+#ifdef GUI_USE_MENU
 #endif
 
-#ifdef USE_METER
+#ifdef GUI_USE_METER
 class GuiMeter : public GuiObject, public Component {
  protected:
   // std::vector<esphome::sensor::Sensor *> sensors_;
@@ -149,31 +149,31 @@ class GuiMeter : public GuiObject, public Component {
 };
 #endif
 
-#ifdef USE_MSGBOX
+#ifdef GUI_USE_MSGBOX
 #endif
 
-#ifdef USE_SPAN
+#ifdef GUI_USE_SPAN
 #endif
 
-#ifdef USE_SPINBOX
+#ifdef GUI_USE_SPINBOX
 #endif
 
-#ifdef USE_SPINNER
+#ifdef GUI_USE_SPINNER
 #endif
 
-#ifdef USE_TABVIEW
+#ifdef GUI_USE_TABVIEW
 #endif
 
-#ifdef USE_TILEVIEW
+#ifdef GUI_USE_TILEVIEW
 #endif
 
-#ifdef USE_WIN
+#ifdef GUI_USE_WIN
 #endif
 
-#ifdef USE_FLEX
+#ifdef GUI_USE_FLEX
 #endif
 
-#ifdef USE_GRID
+#ifdef GUI_USE_GRID
 #endif
 
 }  // namespace gui

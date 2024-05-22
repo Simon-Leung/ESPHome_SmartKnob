@@ -47,6 +47,15 @@ void GuiComponent::setup() {
   lv_disp_ = lv_disp_drv_register(&this->disp_drv_);
 
   lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), LV_PART_MAIN);
+
+#ifdef GUI_USE_ENCODER
+  lv_indev_drv_init(&this->enc_drv_);
+  this->enc_drv_.user_data = this;
+  this->enc_drv_.read_cb = enc_read;
+  this->enc_drv_.type = LV_INDEV_TYPE_ENCODER;
+  this->lv_enc_ = lv_indev_drv_register(&this->enc_drv_);
+#endif
+
   this->high_freq_.start();
   this->last_loop_ = esphome::millis();
 }
@@ -75,6 +84,21 @@ void HOT GuiComponent::refresh(lv_disp_drv_t *disp_drv, const lv_area_t *area,
   GuiComponent *gui = (GuiComponent *)(disp_drv->user_data);
   gui->refresh_internal_(disp_drv, area, buf);
 }
+
+#ifdef GUI_USE_ENCODER
+void HOT GuiComponent::enc_read(struct _lv_indev_drv_t * indev_drv, lv_indev_data_t * data) {
+  GuiComponent *gui = (GuiComponent *)(indev_drv->user_data);
+  static int16_t cont_last = 0;
+  int16_t cont_now = gui->enc_->get_raw_state();
+  data->enc_diff = ECO_STEP(cont_now - cont_last);
+  cont_last = cont_now;
+  if (gui->btn_->state) {
+      data->state = LV_INDEV_STATE_PR;
+  } else {
+      data->state = LV_INDEV_STATE_REL;
+  }
+}
+#endif
 
 void HOT GuiComponent::refresh_internal_(lv_disp_drv_t *disp_drv,
                                          const lv_area_t *area,

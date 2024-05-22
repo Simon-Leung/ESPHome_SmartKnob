@@ -6,10 +6,18 @@
 
 namespace esphome {
 
-// forward declare DisplayBuffer
+// forward declare Display
 namespace display {
-class DisplayBuffer;
+class Display;
 }  // namespace display
+// forward declare binary_sensor
+namespace binary_sensor {
+class BinarySensor;
+}  // namespace binary_sensor
+// forward declare rotary_encoder
+namespace rotary_encoder {
+class RotaryEncoderSensor;
+}  // namespace rotary_encoder
 
 namespace gui {
 #if LV_COLOR_DEPTH == 8
@@ -19,7 +27,11 @@ static const display::ColorBitness LV_BITNESS = display::ColorBitness::COLOR_BIT
 #else
 static const display::ColorBitness LV_BITNESS = display::ColorBitness::COLOR_BITNESS_565;
 #endif
+#define ECO_O(y) (y>0)? -1:1
+#define ECO_STEP(x) x? ECO_O(x):0
 using namespace display;
+using namespace rotary_encoder;
+using namespace binary_sensor;
 
 class GuiComponent : public Component {
  public:
@@ -36,6 +48,11 @@ class GuiComponent : public Component {
   void set_display(Display *display) { this->display_ = display; }
   static void refresh(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                           lv_color_t *buf);
+#ifdef GUI_USE_ENCODER
+  void set_encoder(RotaryEncoderSensor *enc) {this->enc_ = enc; }
+  static void enc_read(struct _lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+  void set_pushbutton(BinarySensor *btn) {this->btn_ = btn; }
+#endif
 
  protected:
   void refresh_internal_(lv_disp_drv_t *disp_drv, const lv_area_t *area,
@@ -47,6 +64,13 @@ class GuiComponent : public Component {
   lv_disp_drv_t disp_drv_{};
   lv_disp_draw_buf_t draw_buf_{};
   lv_disp_rot_t get_lv_rotation();
+
+#ifdef GUI_USE_ENCODER
+  RotaryEncoderSensor *enc_{nullptr};
+  lv_indev_drv_t enc_drv_{};
+  lv_indev_t *lv_enc_{nullptr};
+  BinarySensor *btn_{nullptr};
+#endif
 
  private:
   HighFrequencyLoopRequester high_freq_;

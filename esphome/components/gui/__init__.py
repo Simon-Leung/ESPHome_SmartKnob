@@ -6,6 +6,8 @@ import esphome.config_validation as cv
 import esphome.core as core
 from esphome.schema_extractors import schema_extractor, SCHEMA_EXTRACT
 from esphome.components import display, switch, sensor, color
+from esphome.components.rotary_encoder.sensor import RotaryEncoderSensor
+from esphome.components.binary_sensor import BinarySensor
 from esphome.components.font import Font
 
 from esphome.const import (
@@ -35,6 +37,7 @@ CODEOWNERS = ["@lukasz-tuz"]
 DEPENDENCIES = ["display"]
 
 CONF_DISPLAY_ID = "display_id"
+CONF_ENCODER_SENSOR = "encoder"
 CONF_SWITCH_ID = "switch_id"
 CONF_CHECKBOX = "checkbox"
 CONF_DESCRIPTION = "description"
@@ -83,7 +86,7 @@ CONF_OBJ_ID = "obj_id"
 CONF_PIVOT_X = "pivot_x"
 CONF_PIVOT_Y = "pivot_y"
 CONF_POINTS = "points"
-CONF_ROTARY_ENCODERS = "rotary_encoders"
+CONF_ROTARY_ENCODER = "rotary_encoder"
 CONF_ROTATION = "rotation"
 CONF_R_MOD = "r_mod"
 CONF_SCALES = "scales"
@@ -223,6 +226,11 @@ def lv_color(value):
     color_id = cv.use_id(color)(value)
     return f"lv_color_from({color_id})"
 
+
+def lv_id_name(value):
+    if value == SCHEMA_EXTRACT:
+        return "id"
+    return cv.validate_id_name(value)
 
 # List the LVGL built-in fonts that are available
 LV_FONTS = list(map(lambda size: f"montserrat_{size}", range(12, 50, 2))) + [
@@ -680,7 +688,15 @@ WIDGET_SCHEMA = cv.Any(
 CONFIG_SCHEMA = cv.COMPONENT_SCHEMA.extend(OBJ_SCHEMA).extend(
     {
         cv.GenerateID(): cv.declare_id(GuiComponent),
-        cv.GenerateID(CONF_DISPLAY_ID): cv.use_id(display.DisplayBuffer),
+        cv.GenerateID(CONF_DISPLAY_ID): cv.use_id(display.Display),
+        cv.Optional(CONF_ROTARY_ENCODER): cv.All(
+            cv.Schema(
+                {
+                    cv.Required(CONF_ENCODER_SENSOR): cv.use_id(RotaryEncoderSensor),
+                    cv.Optional(CONF_BINARY_SENSOR): cv.use_id(BinarySensor),
+                }
+            )
+        ),
         cv.Optional(CONF_COLOR_DEPTH, default=8): cv.one_of(1, 8, 16, 32),
         cv.Optional(CONF_DEFAULT_FONT, default="montserrat_36"): lv_font,
         cv.Optional(CONF_BYTE_ORDER, default="big_endian"): cv.one_of(
@@ -715,12 +731,12 @@ async def build_checkbox(obj, config):
     if CONF_TEXT in config:
         cg.add(obj.set_text(config[CONF_TEXT]))
     cg.add(obj.set_switch(sw))
-    cg.add_define("USE_CHECKBOX")
+    cg.add_define("GUI_USE_CHECKBOX")
 
 
 async def build_meter(obj, config):
     lv_uses.add("METER")
-    cg.add_define("USE_METER")
+    cg.add_define("GUI_USE_METER")
 
 
 GUI_OBJECT_BUILDERS = {
@@ -803,6 +819,17 @@ async def to_code(config):
     disp = await cg.get_variable(config[CONF_DISPLAY_ID])
 
     cg.add(gui.set_display(disp))
+
+    if CONF_ROTARY_ENCODER in config:
+        core.CORE.add_build_flag("-DLV_USE_ROTARY_ENCODER")
+        cg.add_define("GUI_USE_ENCODER")
+        enc_conf = config[CONF_ROTARY_ENCODER]
+        if CONF_ENCODER_SENSOR in enc_conf:
+            enc = await cg.get_variable(enc_conf[CONF_ENCODER_SENSOR])
+            cg.add(gui.set_encoder(enc))
+        if CONF_BINARY_SENSOR in enc_conf:
+            btn = await cg.get_variable(enc_conf[CONF_BINARY_SENSOR])
+            cg.add(gui.set_pushbutton(btn))
 
     if CONF_WIDGETS in config:
         for widget in config[CONF_WIDGETS]:

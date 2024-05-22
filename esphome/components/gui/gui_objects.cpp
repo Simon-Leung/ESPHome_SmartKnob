@@ -67,7 +67,7 @@ void GuiLabel::print(int x, int y, const char *text) {
   this->update();
 }
 
-#ifdef USE_TIME
+#ifdef GUI_USE_TIME
 void GuiLabel::strftime(const char *format, ESPTime time) {
   char buffer[64] = {0};
   size_t ret = time.strftime(buffer, sizeof(buffer), format);
@@ -88,7 +88,7 @@ void GuiLabel::strftime(int x, int y, const char *format, ESPTime time) {
 
 /// GUI Checkbox
 
-#ifdef USE_CHECKBOX
+#ifdef GUI_USE_CHECKBOX
 void GuiCheckbox::setup() {
   lv_obj_t *screen = GuiObject::setup();
   if (screen == nullptr) {
@@ -132,7 +132,7 @@ void GuiCheckbox::dump_config() {
 
 /// GUI Meter
 
-#ifdef USE_METER
+#ifdef GUI_USE_METER
 void GuiMeter::setup() {
   lv_obj_t *screen = GuiObject::setup();
   if (screen == nullptr) return;
