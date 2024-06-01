@@ -36,4 +36,4 @@ lvgl:
 
 Gui component initially inspired by @[lukasz-tuz](https://github.com/lukasz-tuz)'s [esphome-gui](https://github.com/lukasz-tuz/esphome-gui).
 
-lvgl component initially inspired by @[clydebarrow](https://github.com/clydebarrow)'s [esphome-lvgl](https://github.com/clydebarrow/esphome).
+lvgl component initially inspired by @[clydebarrow](https://github.com/clydebarrow)'s [esphome@lvgl](https://github.com/clydebarrow/esphome).
