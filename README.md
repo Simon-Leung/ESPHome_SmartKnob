@@ -27,8 +27,10 @@ Environment:
 - esphome version - 2024.5.0b3
 
 Components additional environment:
+
 gui:
 - windows 10
+
 lvgl:
 - ubuntu 22.04
 
