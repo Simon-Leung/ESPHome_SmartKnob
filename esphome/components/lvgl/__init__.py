@@ -64,6 +64,7 @@ from esphome.const import (
     CONF_POSITION,
     CONF_SIZE,
     CONF_INDEX,
+    CONF_INVERTED,
 )
 from esphome.cpp_generator import LambdaExpression
 
@@ -1946,6 +1947,10 @@ async def rotary_encoders_to_code(var, config):
         lprt = enc_conf[df.CONF_LONG_PRESS_REPEAT_TIME].total_milliseconds
         listener = cg.new_Pvariable(enc_conf[CONF_ID], lpt, lprt)
         await cg.register_parented(listener, var)
+        if CONF_INVERTED in enc_conf:
+            init.append(
+                f"{listener}->set_inverted({enc_conf[CONF_INVERTED]})"
+            )
         if group := add_group(enc_conf.get(CONF_GROUP)):
             init.append(
                 f"lv_indev_set_group(lv_indev_drv_register(&{listener}->drv), {group})"
@@ -2068,8 +2073,6 @@ async def to_code(config):
     add_define("LV_FONT_DEFAULT", default_font)
     if lv.is_esphome_font(default_font):
         add_define("LV_FONT_CUSTOM_DECLARE", f"LV_FONT_DECLARE(*{default_font})")
-    default_font = config[CONF_DEFAULT_FONT]
-    core.CORE.add_build_flag(f"-DCONFIG_LV_FONT_DEFAULT_{default_font}=1")
 
     if config[df.CONF_COLOR_DEPTH] == 16:
         add_define(
@@ -2244,6 +2247,7 @@ CONFIG_SCHEMA = (
                             ): cv.positive_time_period_milliseconds,
                             cv.Optional(CONF_BINARY_SENSOR): cv.use_id(BinarySensor),
                             cv.Optional(CONF_GROUP): lv.id_name,
+                            cv.Optional(CONF_INVERTED, default=False): lv_bool,
                             cv.GenerateID(): cv.declare_id(ty.LVRotaryEncoderListener),
                         }
                     )

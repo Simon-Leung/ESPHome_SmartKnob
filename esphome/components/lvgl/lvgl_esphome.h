@@ -405,12 +405,42 @@ class LvglComponent : public PollingComponent {
   void set_page_wrap(bool page_wrap) { this->page_wrap_ = page_wrap; }
   bool is_idle(uint32_t idle_ms) { return lv_disp_get_inactive_time(this->disp_) > idle_ms; }
   void set_buffer_frac(size_t frac) { this->buffer_frac_ = frac; }
+  void page_disable(lv_obj_t * obj) {
+    lv_obj_add_state(obj, LV_STATE_DISABLED);
+    uint32_t child_cnt = lv_obj_get_child_cnt(obj);
+    for (size_t i = 0; i < child_cnt; i++)
+    {
+      lv_obj_t * child = lv_obj_get_child(obj, i);
+      if (child)
+      {
+        page_disable(child);
+      }      
+    }
+  }
+  void page_enable(lv_obj_t * obj) {
+    lv_obj_clear_state(obj, LV_STATE_DISABLED);
+    uint32_t child_cnt = lv_obj_get_child_cnt(obj);
+    for (size_t i = 0; i < child_cnt; i++)
+    {
+      lv_obj_t * child = lv_obj_get_child(obj, i);
+      if (child)
+      {
+        page_enable(child);
+      }      
+    }
+  }
   void add_page(LvPageType *page) { this->pages_.push_back(page); }
   void show_page(size_t index, lv_scr_load_anim_t anim, uint32_t time) {
     if (index >= this->pages_.size())
       return;
     this->page_index_ = index;
+    page_enable(this->pages_[index]->page);
     lv_scr_load_anim(this->pages_[index]->page, anim, time, 0, false);
+    for (size_t i = 0; i < this->pages_.size(); i++)
+    {
+      if(i != index)
+        page_disable(this->pages_[i]->page);
+    }    
   }
   void show_next_page(bool reverse, lv_scr_load_anim_t anim, uint32_t time) {
     if (this->pages_.empty())
@@ -579,16 +609,22 @@ class LVRotaryEncoderListener : public Parented<LvglComponent> {
       LVRotaryEncoderListener *l = (LVRotaryEncoderListener *) d->user_data;
       data->state = l->pressed_ ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
       data->continue_reading = false;
-      data->enc_diff = l->count_ - l->last_count_;
+      if (l->inverted_) {
+        data->enc_diff = -(l->count_ - l->last_count_);
+      } else {
+        data->enc_diff = l->count_ - l->last_count_;
+      }
       l->last_count_ = l->count_;
     };
   }
 
+  void set_inverted(bool inverted) {this->inverted_ = inverted; }
   void set_count(int32_t count) { this->count_ = count; }
   void set_pressed(bool pressed) { this->pressed_ = pressed && !this->parent_->is_paused(); }
   lv_indev_drv_t drv{};
 
  protected:
+  bool inverted_{false};
   bool pressed_{};
   int32_t count_{};
   int32_t last_count_{};
