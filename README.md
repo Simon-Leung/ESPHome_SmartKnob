@@ -20,10 +20,18 @@ Schematic:
 [product manual download](http://doc.panel-tag.cn/_static/espboard/ESP32S3/ZX2D10GE01R-V4848.pdf)
 
 ## Software
+Specifically, with spi interface and RGB interface Pin Reuse, after display is initialized, we need to free the spi bus.
+
 Environment:
 - pythone version - 3.12.3
 - esphome version - 2024.5.0b3
 
-Initially inspired by @[lukasz-tuz](https://github.com/lukasz-tuz)'s [esphome-gui](https://github.com/lukasz-tuz/esphome-gui).
+Components additional environment:
+gui:
+- windows 10
+lvgl:
+- ubuntu 22.04
 
-With spi interface and RGB interface Pin Reuse, after display is initialized, we need to free the spi bus.
+Gui component initially inspired by @[lukasz-tuz](https://github.com/lukasz-tuz)'s [esphome-gui](https://github.com/lukasz-tuz/esphome-gui).
+
+lvgl component initially inspired by @[clydebarrow](https://github.com/clydebarrow)'s [esphome-lvgl](https://github.com/clydebarrow/esphome).
